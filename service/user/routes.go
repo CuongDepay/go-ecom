@@ -25,8 +25,9 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	// get JSON payload
 	var payload types.RegisterUserPayload
-	if err := utils.ParseJSON(r, payload); err != nil {
+	if err := utils.ParseJSON(r, &payload); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
+		return
 	}
 
 	_, err := h.store.GetUserByEmail(payload.Email)
