@@ -75,20 +75,67 @@ Before running this project, make sure you have the following installed:
 
 ## 🔧 Installation & Setup
 
-### 1. Clone the repository
+### Option 1: Docker Compose (Recommended)
+
+The easiest way to run the project is using Docker Compose, which will set up both the API server and MySQL database automatically.
+
+#### 1. Clone the repository
 
 ```bash
 git clone https://github.com/CuongDepay/go-ecom.git
 cd go-ecom
 ```
 
-### 2. Install dependencies
+#### 2. Run with Docker Compose
+
+```bash
+docker-compose up -d
+```
+
+This will:
+
+- Start a MySQL 8.0 database container
+- Build and start the Go API server container
+- Automatically configure the database connection
+- Run the application on `http://localhost:8080`
+
+#### 3. Run database migrations
+
+Once the containers are running, execute migrations:
+
+```bash
+# Connect to the API container and run migrations
+docker-compose exec api make migrate-up
+```
+
+#### 4. Stop the application
+
+```bash
+docker-compose down
+```
+
+To remove volumes (database data):
+
+```bash
+docker-compose down -v
+```
+
+### Option 2: Local Development Setup
+
+#### 1. Clone the repository
+
+```bash
+git clone https://github.com/CuongDepay/go-ecom.git
+cd go-ecom
+```
+
+#### 2. Install dependencies
 
 ```bash
 go mod download
 ```
 
-### 3. Environment Configuration
+#### 3. Environment Configuration
 
 Create a `.env` file in the root directory with the following variables:
 
@@ -109,7 +156,7 @@ JWT_SECRET=your-super-secret-jwt-key
 JWT_EXPIRATION_IN_SECONDS=604800  # 7 days
 ```
 
-### 4. Database Setup
+#### 4. Database Setup
 
 Create a MySQL database:
 
@@ -123,7 +170,7 @@ Run database migrations:
 make migrate-up
 ```
 
-### 5. Run the application
+#### 5. Run the application
 
 ```bash
 make run
@@ -132,6 +179,36 @@ make run
 The server will start on `http://localhost:8080`
 
 ## 🔄 Available Commands
+
+### Docker Compose Commands
+
+```bash
+# Start all services (API + Database)
+docker-compose up -d
+
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (deletes database data)
+docker-compose down -v
+
+# View logs
+docker-compose logs
+
+# Follow logs in real-time
+docker-compose logs -f
+
+# Execute commands in the API container
+docker-compose exec api <command>
+
+# Run migrations in Docker
+docker-compose exec api make migrate-up
+
+# Access MySQL database
+docker-compose exec db mysql -u root -pmypassword ecom
+```
+
+### Local Development Commands
 
 ```bash
 # Build the application
@@ -325,6 +402,19 @@ This project is licensed under the MIT License.
 ### Database Connection
 
 Make sure your MySQL server is running and accessible with the credentials specified in your `.env` file.
+
+For Docker Compose setup, the database connection is automatically configured between containers.
+
+### Security Features
+
+The Dockerfile implements several security best practices:
+
+- ✅ **Multi-stage build** to reduce attack surface
+- ✅ **Distroless base image** (no shell, no package manager)
+- ✅ **Non-root user** (runs as user 65534)
+- ✅ **Static binary** compilation for better security
+- ✅ **Updated base images** with latest security patches
+- ✅ **Dependency verification** with `go mod verify`
 
 ## 📞 Support
 
