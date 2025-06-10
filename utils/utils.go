@@ -4,9 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/go-playground/validator/v10"
 )
 
-func ParseJSON(r *http.Request, v interface{}) error {
+var Validate = validator.New()
+
+func WriteJSON(w http.ResponseWriter, status int, v any) error {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(v)
+}
+
+func WriteError(w http.ResponseWriter, status int, err error) {
+	WriteJSON(w, status, map[string]string{"error": err.Error()})
+}
+
+func ParseJSON(r *http.Request, v any) error {
 	if r.Body == nil {
 		return fmt.Errorf("missing request body")
 	}
@@ -14,13 +28,17 @@ func ParseJSON(r *http.Request, v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
 }
 
-func WriteJSON(w http.ResponseWriter, status int, v any) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+func GetTokenFromRequest(r *http.Request) string {
+	tokenAuth := r.Header.Get("Authorization")
+	tokenQuery := r.URL.Query().Get("token")
 
-	return json.NewEncoder(w).Encode(v)
-}
+	if tokenAuth != "" {
+		return tokenAuth
+	}
 
-func WriteError(w http.ResponseWriter, status int, err error) error {
-	return WriteJSON(w, status, map[string]string{"error": err.Error()})
+	if tokenQuery != "" {
+		return tokenQuery
+	}
+
+	return ""
 }
